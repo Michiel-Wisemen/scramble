@@ -14,6 +14,7 @@ use Dedoc\Scramble\Support\RouteInfo;
 use Dedoc\Scramble\Support\ServerFactory;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route as RouteFacade;
 use LogicException;
 
@@ -154,8 +155,10 @@ class Scramble
         return RouteFacade::get($path, function (Generator $generator) use ($api) {
             $config = static::getGeneratorConfig($api);
 
+            $filename = $config->get('export_path', 'api'.($api === 'default' ? '' : "-$api").'.json');
+
             return view('scramble::docs', [
-                'spec' => $generator($config),
+                'spec' => File::exists(base_path($filename)) ? File::get(base_path($filename)) : $generator($config),
                 'config' => $config,
             ]);
         })
